@@ -1,5 +1,6 @@
 import { PostPage } from "@/templates/blog";
 import { allPosts } from "contentlayer/generated";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 type BlogPostPageProps = {
@@ -8,8 +9,32 @@ type BlogPostPageProps = {
   }>;
 };
 
+// Generate metadata for everypage
+export async function generateMetadata({
+  params,
+}: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = allPosts.find((post) => post.slug === slug);
+
+  if (!post) {
+    return {};
+  }
+
+  return {
+    title: post.title,
+    description: post.description,
+    authors: [{ name: post.author.name }],
+    robots: "index, follow",
+    openGraph: {
+      images: [post.image],
+    },
+  };
+}
+
+// To add ISG
 export const revalidate = 60;
 
+// To use static PAths
 export async function generateStaticParams() {
   return allPosts.map((post) => ({
     slug: post.slug,
